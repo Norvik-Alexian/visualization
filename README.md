@@ -21,3 +21,11 @@ Spark allows you to dump and store your logs in files on disk cheaply, while sti
 In this project we will analyze log datasets from NASA Kennedy Space Center web server in Florida.
 
 We have 2 datasets that contain two months’ worth of all HTTP requests to the NASA Kennedy Space Center WWW server in Florida.
+
+## Setting up Dependencies
+If we don't have variables pre-configured, we can load them up and configure them using the following code. 
+Besides this we also load up some other libraries for working with dataframes and regular expressions.
+
+Working with regular expressions will be one of the major aspects of parsing log files. 
+Regular expressions are a really powerful pattern matching technique which can be used to extract and find patterns
+in semi-structured and unstructured data.
