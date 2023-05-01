@@ -195,3 +195,8 @@ to create a DataFrame containing the total number of 404 responses for HTTP requ
 Then we will build a visualization from the DataFrame.
 Which Looks like total 404 errors occur the most in the afternoon and the least in the early morning.
 We can now reset the maximum rows displayed by pandas to the default value since we had changed it earlier to display a limited number of rows.
+
+## Conclusion
+We took a hands-on approach to data wrangling, parsing, analysis and visualization at scale on a very common yet 
+essential case-study on Log Analytics. While the data we worked on here may not really be traditionally 'Big Data' 
+from a size or volume perspective, the techniques and methodologies are generic enough to scale on larger volumes of data.
