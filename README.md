@@ -38,5 +38,29 @@ This allows us to see the schema for our log data which apparently looks like te
 We can view the type of data structure holding our log data too.
 
 After load the data, now we can take a peek at the actual log data in our dataframe which definitely looks like 
-standard server log data which is semi-structured and we will definitely need to do some data processing and 
+standard server log data which is semi-structured, and we will definitely need to do some data processing and 
 wrangling before this can be useful.
+
+## Data Wrangling
+In Dataa wrangling section of the project we will try and clean and parse our log dataset to really extract structured
+attributes with meaningful information from each log message.
+We will need to use some specific techniques to parse, match and extract these attributes from the log data.
+
+### Data Parsing and Extraction with Regular Expressions
+we have to parse our semi-structured log data into individual columns. 
+We’ll use the special built-in `regexp_extract()` function to do the parsing. 
+This function matches a column against a regular expression with one or more capture groups and allows you to extract
+one of the matched groups. We’ll use one regular expression for each field we wish to extract.
+
+Looks like we have a total of approximately 3.46 million log messages. Not a small number! Let’s extract and take a 
+look at some sample log messages.
+
+### Extracting the necessary data
+We need to write a regular expression to extract a couple of meaningful data from our logs:
+1. Host names
+2. Timestampts
+3. HTTP request methods, URIs and Protocol
+4. HTTP status code
+5. HTTP response content size
+
+And pull it all together into a pipeline.
