@@ -132,7 +132,7 @@ def drop_null_record():
     logs_df = extract_logs_df()
     logs_df = logs_df[logs_df['status'].isNotNull()]
     exprs = [count_null(col_name) for col_name in logs_df.columns]
-    logs_df.agg(*exprs).show()
+    # logs_df.agg(*exprs).show()
 
     return logs_df
 
@@ -163,3 +163,105 @@ logs_df.cache()
 
 # logs_df.show(10, truncate=True)
 # print(logs_df.printSchema())
+
+content_size_summary_df = logs_df.describe(['content_size'])
+content_size_summary_df.toPandas()
+
+
+def convert_pandas_dataframe():
+    pandas_dataframe = (logs_df.agg(F.min(logs_df['content_size']).alias('min_content_size'),
+                                    F.max(logs_df['content_size']).alias('max_content_size'),
+                                    F.mean(logs_df['content_size']).alias('mean_content_size'),
+                                    F.stddev(logs_df['content_size']).alias('std_content_size'),
+                                    F.count(logs_df['content_size']).alias('count_content_size')).toPandas())
+
+    return pandas_dataframe
+
+
+def http_status_code_plot():
+    status_freq_df = (logs_df.groupBy('status').count().sort('status').cache())
+    status_freq_pd_df = (status_freq_df.toPandas().sort_values(by=['count'], ascending=False))
+    sns.catplot(x='status', y='count', data=status_freq_pd_df, kind='bar', order=status_freq_pd_df['status'])
+    return status_freq_df, status_freq_pd_df
+
+
+def http_status_code_details():
+    status_freq_df = http_status_code_plot()[0]
+    log_freq_df = status_freq_df.withColumn('log(count)', F.log(status_freq_df['count']))
+    # log_freq_df.show()
+
+    return log_freq_df
+
+
+def http_status_detail_plot():
+    status_freq_pd_df = http_status_code_plot()[1]
+    log_freq_df = http_status_code_details()
+    log_freq_pd_df = (log_freq_df.toPandas().sort_values(by=['log(count)'],ascending=False))
+    sns.catplot(x='status', y='log(count)', data=log_freq_pd_df, kind='bar', order=status_freq_pd_df['status'])
+    plt.show()
+
+
+def analyze_frequent_hosts():
+    host_sum_df = (logs_df.groupBy('host').count().sort('count', ascending=False).limit(10))
+    host_sum_df.show(truncate=False)
+    host_sum_pd_df = host_sum_df.toPandas()
+    print(host_sum_pd_df.iloc[8]['host'])
+
+
+def display_frequent_endponints():
+    paths_df = (logs_df.groupBy('endpoint').count().sort('count', ascending=False).limit(20))
+    paths_pd_df = paths_df.toPandas()
+
+    return paths_pd_df
+
+
+def top_ten_error_endpoints():
+    not200_df = (logs_df.filter(logs_df['status'] != 200))
+    error_endpoints_freq_df = (not200_df.groupBy('endpoint').count().sort('count', ascending=False).limit(10))
+    error_endpoints_freq_df.show(truncate=False)
+
+
+def daily_request_numbers():
+    host_day_df = logs_df.select(logs_df.host, F.dayofmonth('time').alias('day'))
+    host_day_distinct_df = (host_day_df.dropDuplicates())
+
+    host_day_df.show(5, truncate=False)
+    host_day_distinct_df.show(5, truncate=False)
+
+    daily_hosts_df = (host_day_distinct_df.groupBy('day').count().select(col("day"), col("count").alias("total_hosts")))
+    total_daily_reqests_df = (
+        logs_df.select(F.dayofmonth("time").alias("day")).groupBy("day").count().select(col("day"), col("count").alias(
+            "total_reqs"))
+    )
+    avg_daily_reqests_per_host_df = total_daily_reqests_df.join(daily_hosts_df, 'day')
+    avg_daily_reqests_per_host_df = (avg_daily_reqests_per_host_df.withColumn('avg_reqs', col('total_reqs') / col('total_hosts')).sort("day"))
+    avg_daily_reqests_per_host_df = avg_daily_reqests_per_host_df.toPandas()
+    sns.catplot(x='day', y='avg_reqs', data=avg_daily_reqests_per_host_df, kind='point', height=5, aspect=1.5)
+    plt.show()
+
+
+def analyze_404_responses():
+    not_found_df = logs_df.filter(logs_df["status"] == 404).cache()
+    endpoints_404_count_df = (not_found_df.groupBy("endpoint").count().sort("count", ascending=False).limit(20))
+    # endpoints_404_count_df.show(truncate=False)
+
+    # Listing the Top Twenty 404 Response Code Hosts
+    hosts_404_count_df = (not_found_df.groupBy("host").count().sort("count", ascending=False).limit(20))
+    # hosts_404_count_df.show(truncate=False)
+
+    # Visualizing 404 Errors per Day
+    errors_by_date_sorted_df = (not_found_df.groupBy(F.dayofmonth('time').alias('day')).count().sort("day"))
+    errors_by_date_sorted_pd_df = errors_by_date_sorted_df.toPandas()
+
+    # visualizing 404 erros per day
+    sns.catplot(x='day', y='count', data=errors_by_date_sorted_pd_df, kind='point', height=5, aspect=1.5)
+
+    # Top Three Days for 404 Errors
+    top_three_404_response = (errors_by_date_sorted_df.sort("count", ascending=False).show(3))
+
+    # Visualizing Hourly 404 Errors
+    hourly_avg_errors_sorted_df = (not_found_df.groupBy(F.hour('time').alias('hour')).count().sort('hour'))
+    hourly_avg_errors_sorted_pd_df = hourly_avg_errors_sorted_df.toPandas()
+
+    sns.catplot(x='hour', y='count', data=hourly_avg_errors_sorted_pd_df, kind='bar', height=5, aspect=1.5)
+    plt.show()
