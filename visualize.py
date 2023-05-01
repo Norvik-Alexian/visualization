@@ -110,20 +110,12 @@ def handling_http_status_nulls():
 def find_pipeline_nulls():
     null_status_df = handling_http_status_nulls()
     bad_status_df = null_status_df.select(regexp_extract('value', extract_hosts()[1], 1).alias('host'),
-                                          regexp_extract('value', extract_timestamps()[1], 1).alias(
-                                              'timestamp'),
-                                          regexp_extract('value', extract_method_uri_protocol()[1], 1).alias(
-                                              'method'),
-                                          regexp_extract('value', extract_method_uri_protocol()[1], 2).alias(
-                                              'endpoint'),
-                                          regexp_extract('value', extract_method_uri_protocol()[1], 3).alias(
-                                              'protocol'),
-                                          regexp_extract('value', extract_status()[1], 1).cast(
-                                              'integer').alias(
-                                              'status'),
-                                          regexp_extract('value', extract_content_size()[1], 1).cast(
-                                              'integer').alias(
-                                              'content_size'))
+                                          regexp_extract('value', extract_timestamps()[1], 1).alias('timestamp'),
+                                          regexp_extract('value', extract_method_uri_protocol()[1], 1).alias('method'),
+                                          regexp_extract('value', extract_method_uri_protocol()[1], 2).alias('endpoint'),
+                                          regexp_extract('value', extract_method_uri_protocol()[1], 3).alias('protocol'),
+                                          regexp_extract('value', extract_status()[1], 1).cast('integer').alias('status'),
+                                          regexp_extract('value', extract_content_size()[1], 1).cast('integer').alias('content_size'))
 
     bad_status_df.show(truncate=False)
 
