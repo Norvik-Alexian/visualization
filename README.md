@@ -29,3 +29,14 @@ Besides this we also load up some other libraries for working with dataframes an
 Working with regular expressions will be one of the major aspects of parsing log files. 
 Regular expressions are a really powerful pattern matching technique which can be used to extract and find patterns
 in semi-structured and unstructured data.
+
+## Loading and Viewing the NASA Log Dataset
+Given that our data is stored, let’s load it into a DataFrame. We’ll do this in steps. Let's load the log data file names in our disk.
+Now, we’ll use `sqlContext.read.text()` or `spark.read.text()` to read the text file. 
+This will produce a DataFrame with a single string column called value.
+This allows us to see the schema for our log data which apparently looks like text data which we shall inspect soon. 
+We can view the type of data structure holding our log data too.
+
+After load the data, now we can take a peek at the actual log data in our dataframe which definitely looks like 
+standard server log data which is semi-structured and we will definitely need to do some data processing and 
+wrangling before this can be useful.
