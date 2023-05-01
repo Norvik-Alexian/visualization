@@ -64,3 +64,33 @@ We need to write a regular expression to extract a couple of meaningful data fro
 5. HTTP response content size
 
 And pull it all together into a pipeline.
+
+## Finding Missing Values
+Missing and null values are the bane of data analysis and machine learning. 
+Let’s see how well our data parsing and extraction logic worked. To do that First, let’s verify that there are no null 
+rows in the original dataframe which shows 0 and that is a good news! And if our data parsing and extraction worked properly, 
+we should not have any rows with potential null values, but unfortunately we have more than 33K missing values in our data.
+
+Do remember, this is not a regular pandas dataframe which you can directly query and get which columns have null. 
+Our so-called big dataset is residing on disk which can potentially be present in multiple nodes in a spark cluster.
+
+### Finding Null counts
+We can use a technique to find ut which columns have null values. It looks like we have missing values in `status` and
+`content_size` column.
+We will create a regex pattern and pass it to the pipeline that we created earlier to see the bad records in the data,
+and it looks like incomplete record with no useful information, the best option would be to drop this record.
+
+### Handling nulls in HTTP content size
+First we should look at the top ten records of our data frame having missing content sizes. And It is quite evident 
+that the bad raw data records correspond to error responses, where no content was sent back and the server emitted a
+"-" for the content_size field. Since we don’t want to discard those rows from our analysis, let’s impute or fill them to 0.
+
+### Fix the rows with null content_size
+The easiest solution is to replace the null values in logs_df with 0 like we discussed earlier. 
+The Spark DataFrame API provides a set of functions and fields specifically designed for working with null values, 
+among them:
+* `fillna()`, which fills null values with specified non-null values.
+* `na`, which returns a `DataFrameNaFunctions` object with many functions for operating on null columns.
+
+There are several ways to invoke this function. The easiest is just to replace all null columns with known values.
+But, for safety, it’s better to pass a Python dictionary containing (column_name, value) mappings. That’s what we’ll do.
