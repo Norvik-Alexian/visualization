@@ -17,7 +17,6 @@ spark_context = SparkContext()
 sql_context = SQLContext(spark_context)
 spark = SparkSession(spark_context)
 base_dataframe = spark.read.text(raw_data_files)
-base_dataframe_rdd = base_dataframe.rdd
 sample_logs = [item['value'] for item in base_dataframe.take(15)]
 
 
