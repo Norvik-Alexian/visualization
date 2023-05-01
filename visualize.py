@@ -19,6 +19,10 @@ spark = SparkSession(spark_context)
 base_dataframe = spark.read.text(raw_data_files)
 sample_logs = [item['value'] for item in base_dataframe.take(15)]
 
+'''
+1. Extracting meaningful data from the logs
+'''
+
 
 def extract_hosts():
     host_pattern = r'(^\S+\.[\S+\.]+\S+)\s'
@@ -69,6 +73,10 @@ def extract_logs_df():
 
     return logs_df
 
+'''
+2. handling missing values in the data
+'''
+
 
 def find_missing_values():
     missing_values = base_dataframe.filter(base_dataframe['value'].isNull()).count()
@@ -84,7 +92,8 @@ def find_bad_rows():
                                  logs_df['endpoint'].isNull() |
                                  logs_df['status'].isNull() |
                                  logs_df['content_size'].isNull() |
-                                 logs_df['protocol'].isNull())
+                                 logs_df['protocol'].isNull()
+                                 )
 
     return bad_rows_df.count()
 
@@ -136,6 +145,10 @@ def fill_null_values():
 
     return logs_df
 
+'''
+3. Handling Temporal Fields
+'''
+
 
 def parse_clf_time(text):
     return "{0:04d}-{1:02d}-{2:02d} {3:02d}:{4:02d}:{5:02d}".format(
@@ -154,6 +167,10 @@ logs_df.cache()
 
 # logs_df.show(10, truncate=True)
 # print(logs_df.printSchema())
+
+'''
+4. Data Analysis on our Web Logs
+'''
 
 content_size_summary_df = logs_df.describe(['content_size'])
 content_size_summary_df.toPandas()
