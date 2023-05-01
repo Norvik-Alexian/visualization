@@ -10,7 +10,7 @@ from pyspark.sql.context import SQLContext
 from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import regexp_extract, col, udf
 from pyspark.sql.functions import sum as spark_sum
-from pyspark.sql import functions as F
+from pyspark.sql import functions as f
 
 raw_data_files = config.RAW_DATA_FILES
 spark_context = SparkContext()
@@ -169,11 +169,11 @@ content_size_summary_df.toPandas()
 
 
 def convert_pandas_dataframe():
-    pandas_dataframe = (logs_df.agg(F.min(logs_df['content_size']).alias('min_content_size'),
-                                    F.max(logs_df['content_size']).alias('max_content_size'),
-                                    F.mean(logs_df['content_size']).alias('mean_content_size'),
-                                    F.stddev(logs_df['content_size']).alias('std_content_size'),
-                                    F.count(logs_df['content_size']).alias('count_content_size')).toPandas())
+    pandas_dataframe = (logs_df.agg(f.min(logs_df['content_size']).alias('min_content_size'),
+                                    f.max(logs_df['content_size']).alias('max_content_size'),
+                                    f.mean(logs_df['content_size']).alias('mean_content_size'),
+                                    f.stddev(logs_df['content_size']).alias('std_content_size'),
+                                    f.count(logs_df['content_size']).alias('count_content_size')).toPandas())
 
     return pandas_dataframe
 
@@ -187,7 +187,7 @@ def http_status_code_plot():
 
 def http_status_code_details():
     status_freq_df = http_status_code_plot()[0]
-    log_freq_df = status_freq_df.withColumn('log(count)', F.log(status_freq_df['count']))
+    log_freq_df = status_freq_df.withColumn('log(count)', f.log(status_freq_df['count']))
     # log_freq_df.show()
 
     return log_freq_df
@@ -222,7 +222,7 @@ def top_ten_error_endpoints():
 
 
 def daily_request_numbers():
-    host_day_df = logs_df.select(logs_df.host, F.dayofmonth('time').alias('day'))
+    host_day_df = logs_df.select(logs_df.host, f.dayofmonth('time').alias('day'))
     host_day_distinct_df = (host_day_df.dropDuplicates())
 
     host_day_df.show(5, truncate=False)
@@ -230,7 +230,7 @@ def daily_request_numbers():
 
     daily_hosts_df = (host_day_distinct_df.groupBy('day').count().select(col("day"), col("count").alias("total_hosts")))
     total_daily_reqests_df = (
-        logs_df.select(F.dayofmonth("time").alias("day")).groupBy("day").count().select(col("day"), col("count").alias(
+        logs_df.select(f.dayofmonth("time").alias("day")).groupBy("day").count().select(col("day"), col("count").alias(
             "total_reqs"))
     )
     avg_daily_reqests_per_host_df = total_daily_reqests_df.join(daily_hosts_df, 'day')
@@ -250,7 +250,7 @@ def analyze_404_responses():
     # hosts_404_count_df.show(truncate=False)
 
     # Visualizing 404 Errors per Day
-    errors_by_date_sorted_df = (not_found_df.groupBy(F.dayofmonth('time').alias('day')).count().sort("day"))
+    errors_by_date_sorted_df = (not_found_df.groupBy(f.dayofmonth('time').alias('day')).count().sort("day"))
     errors_by_date_sorted_pd_df = errors_by_date_sorted_df.toPandas()
 
     # visualizing 404 erros per day
@@ -260,7 +260,7 @@ def analyze_404_responses():
     top_three_404_response = (errors_by_date_sorted_df.sort("count", ascending=False).show(3))
 
     # Visualizing Hourly 404 Errors
-    hourly_avg_errors_sorted_df = (not_found_df.groupBy(F.hour('time').alias('hour')).count().sort('hour'))
+    hourly_avg_errors_sorted_df = (not_found_df.groupBy(f.hour('time').alias('hour')).count().sort('hour'))
     hourly_avg_errors_sorted_pd_df = hourly_avg_errors_sorted_df.toPandas()
 
     sns.catplot(x='hour', y='count', data=hourly_avg_errors_sorted_pd_df, kind='bar', height=5, aspect=1.5)
