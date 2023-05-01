@@ -94,3 +94,7 @@ among them:
 
 There are several ways to invoke this function. The easiest is just to replace all null columns with known values.
 But, for safety, it’s better to pass a Python dictionary containing (column_name, value) mappings. That’s what we’ll do.
+
+### Handling Temporal Fields (Timestamp)
+Now that we have a clean, parsed DataFrame, we have to parse the timestamp field into an actual timestamp. 
+The Common Log Format time is somewhat non-standard. A User-Defined Function (UDF) is the most straightforward way to parse it.
