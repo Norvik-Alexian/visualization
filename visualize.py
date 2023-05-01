@@ -196,7 +196,7 @@ def http_status_code_details():
 def http_status_detail_plot():
     status_freq_pd_df = http_status_code_plot()[1]
     log_freq_df = http_status_code_details()
-    log_freq_pd_df = (log_freq_df.toPandas().sort_values(by=['log(count)'],ascending=False))
+    log_freq_pd_df = (log_freq_df.toPandas().sort_values(by=['log(count)'], ascending=False))
     sns.catplot(x='status', y='log(count)', data=log_freq_pd_df, kind='bar', order=status_freq_pd_df['status'])
     plt.show()
 
