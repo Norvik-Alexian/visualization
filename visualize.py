@@ -1,8 +1,6 @@
 import re
 import config
 import logging
-import numpy as np
-import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -307,7 +305,7 @@ def analyze_frequent_hosts():
         empty_host_removed = host_sum_pd_df.iloc[8]['host']
     except Exception as e:
         message = f'Something went wrong with analyzing frequent hosts, message: {e}'
-        logging.error(messages, exc_info=True)
+        logging.error(message, exc_info=True)
         raise ValueError(message)
 
 
