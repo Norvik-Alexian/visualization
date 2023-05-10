@@ -92,7 +92,7 @@ def extract_logs_df():
                                         regexp_extract('value', extract_status()[1], 1).cast('integer').alias('status'),
                                         regexp_extract('value', extract_content_size()[1], 1).cast('integer').alias(
                                             'content_size'))
-        # logs_df.show(10, truncate=True)
+        logs_df.show(10, truncate=True)
         logs_count = logs_df.count()
         logs_len = len(logs_df.columns)
 
@@ -151,7 +151,7 @@ def handling_http_status_nulls():
         null_status_df.count()
         null_content_size_df = base_dataframe.filter(~base_dataframe['value'].rlike(r'\s\d+$'))
         null_count_size = null_content_size_df.count()
-        # null_status_df.show(truncate=False)
+        null_status_df.show(truncate=False)
 
         return null_status_df
     except Exception as e:
@@ -183,11 +183,11 @@ def drop_null_record():
         logs_df = extract_logs_df()
         logs_df = logs_df[logs_df['status'].isNotNull()]
         exprs = [count_null(col_name) for col_name in logs_df.columns]
-        # logs_df.agg(*exprs).show()
+        logs_df.agg(*exprs).show()
 
         return logs_df
     except Exception as e:
-        message = f'Something went wrong with droping null records from the data, message: {e}'
+        message = f'Something went wrong with dropping null records from the data, message: {e}'
         logging.error(message, exc_info=True)
         raise ValueError(message)
 
@@ -197,7 +197,7 @@ def fill_null_values():
         logs_df = drop_null_record()
         logs_df = logs_df.na.fill({'content_size': 0})
         exprs = [count_null(col_names=col_name) for col_name in logs_df.columns]
-        # logs_df.agg(*exprs).show()
+        logs_df.agg(*exprs).show()
 
         return logs_df
     except Exception as e:
@@ -224,6 +224,7 @@ def parse_clf_time(text):
         message = f'Something with wrong with parsing the timestamp, message: {e}'
         logging.error(message, exc_info=True)
         raise ValueError(message)
+
 
 udf_parse_time = udf(parse_clf_time)
 logs_df = fill_null_values()
@@ -309,14 +310,14 @@ def analyze_frequent_hosts():
         raise ValueError(message)
 
 
-def display_frequent_endponints():
+def display_frequent_endpoints():
     try:
         paths_df = (logs_df.groupBy('endpoint').count().sort('count', ascending=False).limit(20))
         paths_pd_df = paths_df.toPandas()
 
         return paths_pd_df
     except Exception as e:
-        message = f'Something went wrong with displyaing frequent endpoints, message: {e}'
+        message = f'Something went wrong with displaying frequent endpoints, message: {e}'
         logging.error(message, exc_info=True)
         raise ValueError(message)
 
@@ -341,14 +342,14 @@ def daily_request_numbers():
         host_day_distinct_df.show(5, truncate=False)
 
         daily_hosts_df = (host_day_distinct_df.groupBy('day').count().select(col("day"), col("count").alias("total_hosts")))
-        total_daily_reqests_df = (
+        total_daily_requests_df = (
             logs_df.select(f.dayofmonth("time").alias("day")).groupBy("day").count().select(col("day"), col("count").alias(
                 "total_reqs"))
         )
-        avg_daily_reqests_per_host_df = total_daily_reqests_df.join(daily_hosts_df, 'day')
-        avg_daily_reqests_per_host_df = (avg_daily_reqests_per_host_df.withColumn('avg_reqs', col('total_reqs') / col('total_hosts')).sort("day"))
-        avg_daily_reqests_per_host_df = avg_daily_reqests_per_host_df.toPandas()
-        sns.catplot(x='day', y='avg_reqs', data=avg_daily_reqests_per_host_df, kind='point', height=5, aspect=1.5)
+        avg_daily_requests_per_host_df = total_daily_requests_df.join(daily_hosts_df, 'day')
+        avg_daily_requests_per_host_df = (avg_daily_requests_per_host_df.withColumn('avg_reqs', col('total_reqs') / col('total_hosts')).sort("day"))
+        avg_daily_requests_per_host_df = avg_daily_requests_per_host_df.toPandas()
+        sns.catplot(x='day', y='avg_reqs', data=avg_daily_requests_per_host_df, kind='point', height=5, aspect=1.5)
         plt.title('average requests per day')
         plt.show()
     except Exception as e:
@@ -371,7 +372,7 @@ def analyze_404_responses():
         errors_by_date_sorted_df = (not_found_df.groupBy(f.dayofmonth('time').alias('day')).count().sort("day"))
         errors_by_date_sorted_pd_df = errors_by_date_sorted_df.toPandas()
 
-        # visualizing 404 erros per day
+        # visualizing 404 errors per day
         sns.catplot(x='day', y='count', data=errors_by_date_sorted_pd_df, kind='point', height=5, aspect=1.5)
         plt.title('404 errors per day')
 
